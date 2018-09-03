@@ -43,12 +43,14 @@ def GetFlatten(data, key):
 
     return dataFlat
 
-def DictToJson(data):
-    with open('data.json', 'w') as outfile:
+def DictToJson(data, topic):
+    filename = topic + '.json'
+    with open(filename, 'w') as outfile:
         json.dump(data, outfile, indent=4)
 
-def DictToCsv(data):
-    with open('data.csv', 'w') as f:
+def DictToCsv(data, topic):
+    filename = topic + '.csv'
+    with open(filename, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(data.keys())
         dataCsv = zip(*data.values())
@@ -57,16 +59,40 @@ def DictToCsv(data):
         f.close()
 
 def Visualization(data):
-    legend = list()
     for k, v in data.items():
         try:
-            plt.plot(v)
-            legend.append(k)
+            plt.plot(v, label=k)
         except:
             pass
 
-    plt.legend(legend)
-    plt.show()
+def Analysis(topic, bag):
+    topicMember = topic.split('/')
+    topicMember = filter(None, topicMember)
+
+    targetMember = 'msg'
+    if len(topicMember) > 1:
+        for member in topicMember[1:]:
+            targetMember = targetMember + "." + member
+
+    dataTmp = dict()
+    data = dict()
+    for topic, msg, t in bag.read_messages(topics='/' + topicMember[0]):
+        MsgToDictionary(eval(targetMember), topicMember[-1], dataTmp)
+        if topicMember[-1] in data.keys():
+            data[topicMember[-1]].append(dataTmp[topicMember[-1]])
+        else:
+            data[topicMember[-1]] = list()
+
+    dataFlat = GetFlatten(data, topicMember[-1])
+
+    if '--flatten' in (argv for argv in sys.argv):
+        DictToJson(dataFlat, topicMember[-1])
+    else:
+        DictToJson(data, topicMember[-1])
+
+    DictToCsv(dataFlat, topicMember[-1])
+
+    Visualization(dataFlat)
 
 def main():
     if len(sys.argv) < 3 :
@@ -87,35 +113,12 @@ def main():
         for topic in topics:
             print('    ' + topic)
     else:
-        topicMember = sys.argv[2].split('/')
-        topicMember = filter(None, topicMember)
+        for topic in sys.argv[2:]:
+            Analysis(topic, bag)
 
-        targetMember = 'msg'
-        if len(topicMember) > 1:
-            for member in topicMember[1:]:
-                targetMember = targetMember + "." + member
-
-        dataTmp = dict()
-        data = dict()
-        for topic, msg, t in bag.read_messages(topics='/' + topicMember[0]):
-            MsgToDictionary(eval(targetMember), topicMember[-1], dataTmp)
-            if topicMember[-1] in data.keys():
-                data[topicMember[-1]].append(dataTmp[topicMember[-1]])
-            else:
-                data[topicMember[-1]] = list()
-        bag.close()
-
-        dataFlat = GetFlatten(data, topicMember[-1])
-
-        if '--flatten' in (argv for argv in sys.argv):
-            DictToJson(dataFlat)
-        else:
-            DictToJson(data)
-
-        DictToCsv(dataFlat)
-
-        Visualization(dataFlat)
-
+    plt.legend()
+    plt.show()
+    bag.close()
 
 if __name__ == '__main__':
     main()
