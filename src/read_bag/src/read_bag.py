@@ -125,9 +125,9 @@ def main():
     else:
         for topic in sys.argv[2:]:
             Analysis(topic, bag)
+        plt.legend()
+        plt.show()
 
-    plt.legend()
-    plt.show()
     bag.close()
 
 if __name__ == '__main__':
