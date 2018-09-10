@@ -44,12 +44,12 @@ def GetFlatten(data, key):
     return dataFlat
 
 def DictToJson(data, topic):
-    filename = topic + '.json'
+    filename = 'data/' + topic + '.json'
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, indent=4)
 
 def DictToCsv(data, topic):
-    filename = topic + '.csv'
+    filename = 'data/' + topic + '.csv'
     with open(filename, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(data.keys())
@@ -101,6 +101,10 @@ def Analysis(topic, bag):
     Visualization(dataFlat)
 
 def main():
+    directory = 'data'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
     if len(sys.argv) < 3 :
         sys.stdout.write("\033[1;31m")
         print('Error, wrong arguments')
