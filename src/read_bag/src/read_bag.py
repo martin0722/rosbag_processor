@@ -66,8 +66,14 @@ def Visualization(data):
             pass
 
 def Analysis(topic, bag):
-    topicMember = topic.split('/')
-    topicMember = filter(None, topicMember)
+    if '_/' in topic:
+        topicTmp = topic.split('_/')
+        topicMember = topicTmp[-1].split('/')
+        topicMember = filter(None, topicMember)
+        topicMember[0] = topicTmp[0] + '/' + topicMember[0]
+    else:
+        topicMember = topic.split('/')
+        topicMember = filter(None, topicMember)
 
     targetMember = 'msg'
     if len(topicMember) > 1:
