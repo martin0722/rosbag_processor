@@ -61,7 +61,9 @@ def DictToCsv(data, topic):
 def Visualization(data):
     for k, v in data.items():
         try:
-            plt.plot(v, label=k)
+            if 'time' not in k:
+                t = np.array(data['time'])
+                plt.plot(t - data['time'][0], v, label=k)
         except:
             pass
 
@@ -85,7 +87,11 @@ def Analysis(topic, bag):
     for topic, msg, t in bag.read_messages(topics='/' + topicMember[0]):
         MsgToDictionary(eval(targetMember), topicMember[-1], dataTmp)
         if topicMember[-1] in data.keys():
-            data[topicMember[-1]].append(dataTmp[topicMember[-1]])
+            if isinstance(dataTmp[topicMember[-1]], dict):
+                dataTmp[topicMember[-1]]['time'] = t.to_sec()
+                data[topicMember[-1]].append(dataTmp[topicMember[-1]])
+            else:
+                data[topicMember[-1]].append({'time': t.to_sec(), topicMember[-1]: dataTmp[topicMember[-1]]})
         else:
             data[topicMember[-1]] = list()
 
@@ -125,6 +131,7 @@ def main():
     else:
         for topic in sys.argv[2:]:
             Analysis(topic, bag)
+        plt.xlabel('time(sec)')
         plt.legend()
         plt.show()
 
