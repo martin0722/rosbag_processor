@@ -16,7 +16,15 @@ def MsgToDictionary(msg, name, data):
             MsgToDictionary(val, str(s), dataTmp)
         data[name] = dataTmp
     except:
-        data[name] = msg
+        if isinstance(msg, list):
+            listTmp = list()
+            dataTmp = dict()
+            for m in msg:
+                MsgToDictionary(m, name, dataTmp)
+                listTmp.append(dataTmp[name])
+            data[name] = listTmp
+        else:
+            data[name] = msg
 
 def Flatten(d, parent_key='', sep='/'):
     items = []
