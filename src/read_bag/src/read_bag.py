@@ -66,12 +66,12 @@ def DictToCsv(data, topic):
             writer.writerow(list(dataCsvRow))
         f.close()
 
-def Visualization(data):
+def Visualization(data, time_offset):
     for k, v in data.items():
         try:
             if 'time' not in k:
                 t = np.array(data['time'])
-                plt.plot(t - data['time'][0], v, label=k)
+                plt.plot(t - time_offset, v, label=k)
         except:
             pass
 
@@ -112,7 +112,8 @@ def Analysis(topic, bag):
 
     DictToCsv(dataFlat, topicMember[-1])
 
-    Visualization(dataFlat)
+    return dataFlat
+
 
 def main():
     directory = 'data'
@@ -137,8 +138,19 @@ def main():
         for topic in topics:
             print('    ' + topic)
     else:
+        data_list = []
+        time_list = []
         for topic in sys.argv[2:]:
-            Analysis(topic, bag)
+            data = Analysis(topic, bag)
+            data_list.append(data)
+            try:
+                time_list.append(data['time'][0])
+            except:
+                pass
+
+        time_offset = np.min(np.array(time_list))
+        for d in data_list:
+            Visualization(d, time_offset)
         plt.xlabel('time(sec)')
         plt.legend()
         plt.show()
